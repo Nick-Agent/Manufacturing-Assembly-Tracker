@@ -7,11 +7,11 @@ import {
   Package,
   Clipboard,
   TestTube,
-  Warehouse,
   ScanLine,
   FileText,
   ChevronDown,
-  ChevronRight
+  ChevronRight,
+  Warehouse
 } from "lucide-react"
 import { useState } from "react"
 import { Button } from "./ui/button"
@@ -143,8 +143,8 @@ export function SideNavigation() {
               className={cn(
                 "w-full justify-start gap-3 h-11 px-4 text-left font-medium transition-all duration-200",
                 level > 0 && "ml-4 w-[calc(100%-1rem)]",
-                "hover:bg-white/60 dark:hover:bg-slate-800/60 hover:text-slate-900 dark:hover:text-slate-100",
-                "text-slate-600 dark:text-slate-400"
+                "hover:bg-slate-800/60 hover:text-slate-100",
+                "text-slate-300"
               )}
             >
               <IconComponent className="h-5 w-5 flex-shrink-0" />
@@ -173,7 +173,7 @@ export function SideNavigation() {
           level > 0 && "ml-4 w-[calc(100%-1rem)]",
           isActive 
             ? "bg-gradient-to-r from-blue-500 to-indigo-600 text-white shadow-lg hover:from-blue-600 hover:to-indigo-700" 
-            : "hover:bg-white/60 dark:hover:bg-slate-800/60 hover:text-slate-900 dark:hover:text-slate-100 text-slate-600 dark:text-slate-400"
+            : "hover:bg-slate-800/60 hover:text-slate-100 text-slate-300"
         )}
       >
         <IconComponent className="h-5 w-5 flex-shrink-0" />
@@ -183,7 +183,7 @@ export function SideNavigation() {
   }
 
   return (
-    <nav className="fixed left-0 top-16 h-[calc(100vh-4rem)] w-64 bg-white/40 dark:bg-slate-900/40 backdrop-blur-md border-r border-slate-200/50 dark:border-slate-700/50 overflow-y-auto">
+    <nav className="fixed left-0 top-16 h-[calc(100vh-4rem)] w-64 bg-slate-900/95 backdrop-blur-md border-r border-slate-700/50 overflow-y-auto">
       <div className="p-4 space-y-2">
         {navigationItems.map(item => renderNavigationItem(item))}
       </div>

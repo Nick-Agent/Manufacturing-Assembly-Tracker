@@ -20,6 +20,7 @@ export function DatabaseView() {
   const [isExporting, setIsExporting] = useState(false)
   const [editingRecord, setEditingRecord] = useState<any>(null)
   const [editFormData, setEditFormData] = useState<any>({})
+  const [editMode, setEditMode] = useState<string>("single") // "single" or "multiple"
 
   // Load databases on component mount
   useEffect(() => {
@@ -74,12 +75,12 @@ export function DatabaseView() {
     try {
       const csvData = await file.text()
       const response = await importDatabaseCSV(selectedDatabase, csvData)
-      
+
       toast({
         title: "Success",
         description: response.message
       })
-      
+
       // Reload records
       await loadRecords()
     } catch (error: any) {
@@ -102,7 +103,7 @@ export function DatabaseView() {
     setIsExporting(true)
     try {
       const response = await exportDatabaseCSV(selectedDatabase)
-      
+
       // Create and download CSV file
       const blob = new Blob([response.csvData], { type: 'text/csv' })
       const url = window.URL.createObjectURL(blob)
@@ -133,26 +134,61 @@ export function DatabaseView() {
   const handleEditRecord = (record: any) => {
     setEditingRecord(record)
     setEditFormData({ ...record })
+    setEditMode("single") // Reset to single edit mode
   }
 
   const handleSaveRecord = async () => {
     if (!editingRecord || !selectedDatabase) return
 
     try {
-      const response = await updateDatabaseRecord(selectedDatabase, editingRecord._id, editFormData)
-      
-      toast({
-        title: "Success",
-        description: response.message
-      })
-      
-      // Update local records
-      setRecords(prev => prev.map(record => 
-        record._id === editingRecord._id ? { ...editFormData } : record
-      ))
-      
+      if (editMode === "multiple") {
+        // Get matching field based on database type
+        const matchingField = selectedDatabase === "Serial_List" ? "serialNumber" : "assemblyNumber"
+        const matchingValue = editingRecord[matchingField]
+        
+        // Find all records with matching value
+        const matchingRecords = records.filter(record => 
+          record[matchingField] === matchingValue
+        )
+
+        // Update all matching records
+        for (const record of matchingRecords) {
+          await updateDatabaseRecord(selectedDatabase, record._id, {
+            ...record,
+            ...editFormData,
+            _id: record._id // Preserve original ID
+          })
+        }
+
+        // Update local records for all matching items
+        setRecords(prev => prev.map(record =>
+          record[matchingField] === matchingValue 
+            ? { ...record, ...editFormData, _id: record._id }
+            : record
+        ))
+
+        toast({
+          title: "Success",
+          description: `Successfully updated ${matchingRecords.length} records with matching ${matchingField}`
+        })
+      } else {
+        // Single record update (existing functionality)
+        const response = await updateDatabaseRecord(selectedDatabase, editingRecord._id, editFormData)
+
+        // Update local records
+        setRecords(prev => prev.map(record =>
+          record._id === editingRecord._id ? { ...editFormData } : record
+        ))
+
+        toast({
+          title: "Success",
+          description: response.message
+        })
+      }
+
       setEditingRecord(null)
       setEditFormData({})
+      setEditMode("single")
     } catch (error: any) {
       console.error("Error updating record:", error)
       toast({
@@ -166,6 +202,28 @@ export function DatabaseView() {
   const getTableColumns = () => {
     if (records.length === 0) return []
     return Object.keys(records[0]).filter(key => key !== '_id')
+  }
+
+  const shouldShowEditModeSelector = () => {
+    return selectedDatabase === "Batch_List" || selectedDatabase === "Serial_List"
+  }
+
+  const getEditModeLabel = () => {
+    if (selectedDatabase === "Serial_List") {
+      return "Edit all records with matching Serial Number"
+    } else if (selectedDatabase === "Batch_List") {
+      return "Edit all records with matching Assembly Number"
+    }
+    return "Edit multiple records"
+  }
+
+  const getMatchingRecordsCount = () => {
+    if (!editingRecord || !shouldShowEditModeSelector()) return 0
+    
+    const matchingField = selectedDatabase === "Serial_List" ? "serialNumber" : "assemblyNumber"
+    const matchingValue = editingRecord[matchingField]
+    
+    return records.filter(record => record[matchingField] === matchingValue).length
   }
 
   return (
@@ -332,9 +390,32 @@ export function DatabaseView() {
               Modify the record fields and save changes
             </DialogDescription>
           </DialogHeader>
-          
+
           {editingRecord && (
             <div className="space-y-4 max-h-96 overflow-y-auto">
+              {/* Edit Mode Selector - Only for Batch_List and Serial_List */}
+              {shouldShowEditModeSelector() && (
+                <div className="space-y-2 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
+                  <Label htmlFor="editMode">Edit Mode</Label>
+                  <Select value={editMode} onValueChange={setEditMode}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="single">Edit this record only</SelectItem>
+                      <SelectItem value="multiple">
+                        {getEditModeLabel()} ({getMatchingRecordsCount()} records)
+                      </SelectItem>
+                    </SelectContent>
+                  </Select>
+                  {editMode === "multiple" && (
+                    <p className="text-sm text-blue-700 dark:text-blue-300">
+                      This will update all {getMatchingRecordsCount()} records with the same {selectedDatabase === "Serial_List" ? "serial number" : "assembly number"}.
+                    </p>
+                  )}
+                </div>
+              )}
+
               {getTableColumns().map((column) => (
                 <div key={column} className="space-y-2">
                   <Label htmlFor={column}>
@@ -350,11 +431,14 @@ export function DatabaseView() {
                   />
                 </div>
               ))}
-              
+
               <div className="flex justify-end gap-2 pt-4">
                 <Button
                   variant="outline"
-                  onClick={() => setEditingRecord(null)}
+                  onClick={() => {
+                    setEditingRecord(null)
+                    setEditMode("single")
+                  }}
                 >
                   <X className="h-4 w-4 mr-2" />
                   Cancel
@@ -364,7 +448,7 @@ export function DatabaseView() {
                   className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700"
                 >
                   <Save className="h-4 w-4 mr-2" />
-                  Save Changes
+                  {editMode === "multiple" ? `Save ${getMatchingRecordsCount()} Records` : "Save Changes"}
                 </Button>
               </div>
             </div>

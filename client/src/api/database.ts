@@ -10,7 +10,7 @@ export const getDatabases = () => {
       resolve({
         databases: [
           'UL_ASM',
-          'UL_Product', 
+          'UL_Product',
           'Batch_List',
           'Serial_List',
           'Activity_Log',
@@ -72,6 +72,19 @@ export const getDatabaseRecords = (databaseName: string) => {
             productDescription: 'Main Control Unit',
             agNumber: 'AG001',
             note: 'Initial batch'
+          },
+          {
+            _id: '2',
+            assemblyNumber: 'ASM001',
+            status: 'Active',
+            date: '2024-01-16',
+            assemblyType: 'Main Assembly',
+            lastUpdate: '2024-01-16',
+            userName: 'admin@example.com',
+            productCode: 'PROD001',
+            productDescription: 'Main Control Unit',
+            agNumber: 'AG002',
+            note: 'Second batch with same assembly'
           }
         ],
         'Serial_List': [
@@ -87,6 +100,19 @@ export const getDatabaseRecords = (databaseName: string) => {
             assemblyType: 'Main Assembly',
             productCode: 'PROD001',
             note: 'Test serial'
+          },
+          {
+            _id: '2',
+            serialNumber: 'SN001',
+            status: 'Testing',
+            lastUpdate: '2024-01-16',
+            date: '2024-01-16',
+            userName: 'admin@example.com',
+            location: 'QA',
+            assemblyNumber: 'ASM001',
+            assemblyType: 'Main Assembly',
+            productCode: 'PROD001',
+            note: 'Duplicate serial for testing bulk edit'
           }
         ],
         'Activity_Log': [
@@ -130,7 +156,7 @@ export const getDatabaseRecords = (databaseName: string) => {
           }
         ]
       };
-      
+
       resolve({
         records: mockData[databaseName as keyof typeof mockData] || []
       });
@@ -179,5 +205,21 @@ export const updateDatabaseRecord = (databaseName: string, id: string, data: any
         message: 'Record updated successfully'
       });
     }, 500);
+  });
+};
+
+// Description: Update multiple database records
+// Endpoint: PUT /api/database/:name/bulk-update
+// Request: { name: string, updates: Array<{ id: string, data: any }> }
+// Response: { success: boolean, message: string, updatedCount: number }
+export const updateMultipleDatabaseRecords = (databaseName: string, updates: Array<{ id: string, data: any }>) => {
+  return new Promise((resolve) => {
+    setTimeout(() => {
+      resolve({
+        success: true,
+        message: `Successfully updated ${updates.length} records`,
+        updatedCount: updates.length
+      });
+    }, 800);
   });
 };

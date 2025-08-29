@@ -19,7 +19,7 @@ export const getUsers = () => {
             id: '2',
             email: 'user2@example.com',
             role: 'operator',
-            permissions: ['test-log', 'stock-management']
+            permissions: ['scan-in', 'scan-out', 'report']
           },
           {
             id: '3',
@@ -68,14 +68,29 @@ export const getAvailablePermissions = () => {
             description: 'Register serial numbers to batches'
           },
           {
-            key: 'test-log',
-            label: 'Test Log',
-            description: 'Access test logging functionality'
+            key: 'scan-in',
+            label: 'Scan IN',
+            description: 'Scan items into stock'
           },
           {
-            key: 'stock-management',
-            label: 'Stock Management',
-            description: 'Manage stock movements and scanning'
+            key: 'scan-out',
+            label: 'Scan OUT',
+            description: 'Scan items out of stock'
+          },
+          {
+            key: 'report',
+            label: 'Report',
+            description: 'Generate and export stock reports'
+          },
+          {
+            key: 'test-log-pass',
+            label: 'Test Log (PASS)',
+            description: 'Record successful test results'
+          },
+          {
+            key: 'test-log-fail',
+            label: 'Test Log (FAIL)',
+            description: 'Record failed test results'
           }
         ]
       });
