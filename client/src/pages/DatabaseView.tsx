@@ -71,43 +71,23 @@ export function DatabaseView() {
     const file = event.target.files?.[0]
     if (!file || !selectedDatabase) return
 
-    console.log('=== FILE IMPORT START ===');
-    console.log('File name:', file.name);
-    console.log('File size:', file.size);
-    console.log('File type:', file.type);
-    console.log('Selected database:', selectedDatabase);
-
     setIsImporting(true)
     try {
-      console.log('Reading file content...');
       const csvData = await file.text()
-      console.log('File read successfully');
-      console.log('CSV data length:', csvData.length);
-      console.log('First 300 characters:', csvData.substring(0, 300));
-      
-      console.log('Calling importDatabaseCSV API...');
       const response = await importDatabaseCSV(selectedDatabase, csvData)
-      console.log('Import API response:', response);
 
       toast({
         title: "Success",
         description: response.message
       })
 
-      // Reload records to show the newly imported data
-      console.log('Reloading records to show imported data...');
+      // Reload records
       await loadRecords()
-      console.log('Records reloaded successfully');
     } catch (error: any) {
-      console.error('=== FILE IMPORT ERROR ===');
       console.error("Error importing CSV:", error)
-      console.error("Error type:", error.constructor.name);
-      console.error("Error message:", error.message);
-      console.error("Error stack:", error.stack);
-      
       toast({
         title: "Error",
-        description: error.message || "Failed to import CSV file",
+        description: "Failed to import CSV file",
         variant: "destructive"
       })
     } finally {
@@ -165,9 +145,9 @@ export function DatabaseView() {
         // Get matching field based on database type
         const matchingField = selectedDatabase === "Serial_List" ? "serialNumber" : "assemblyNumber"
         const matchingValue = editingRecord[matchingField]
-
+        
         // Find all records with matching value
-        const matchingRecords = records.filter(record =>
+        const matchingRecords = records.filter(record => 
           record[matchingField] === matchingValue
         )
 
@@ -182,7 +162,7 @@ export function DatabaseView() {
 
         // Update local records for all matching items
         setRecords(prev => prev.map(record =>
-          record[matchingField] === matchingValue
+          record[matchingField] === matchingValue 
             ? { ...record, ...editFormData, _id: record._id }
             : record
         ))
@@ -239,10 +219,10 @@ export function DatabaseView() {
 
   const getMatchingRecordsCount = () => {
     if (!editingRecord || !shouldShowEditModeSelector()) return 0
-
+    
     const matchingField = selectedDatabase === "Serial_List" ? "serialNumber" : "assemblyNumber"
     const matchingValue = editingRecord[matchingField]
-
+    
     return records.filter(record => record[matchingField] === matchingValue).length
   }
 
@@ -268,7 +248,7 @@ export function DatabaseView() {
         <CardHeader>
           <CardTitle>Database Management</CardTitle>
           <CardDescription>
-            Select a database to view, import, export, or edit records. Import CSV will initialize the database with seed data if needed.
+            Select a database to view, import, export, or edit records
           </CardDescription>
         </CardHeader>
         <CardContent>

@@ -7,8 +7,6 @@ const MongoStore = require('connect-mongo');
 const basicRoutes = require("./routes/index");
 const authRoutes = require("./routes/authRoutes");
 const userRoutes = require("./routes/userRoutes");
-const adminRoutes = require("./routes/adminRoutes");
-const databaseRoutes = require("./routes/databaseRoutes");
 const { connectDB } = require("./config/database");
 const { seedDatabase } = require("./config/seedDatabase");
 const cors = require("cors");
@@ -26,12 +24,8 @@ app.enable('json spaces');
 app.enable('strict routing');
 
 app.use(cors({}));
-
-// Increase body size limits for CSV file uploads
-console.log('Setting up Express middleware with increased body size limits...');
-app.use(express.json({ limit: '50mb' }));
-app.use(express.urlencoded({ extended: true, limit: '50mb' }));
-console.log('Express middleware configured with 50mb body size limit');
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
 // Database connection and seeding
 const initializeDatabase = async () => {
@@ -52,10 +46,6 @@ app.use(basicRoutes);
 app.use('/api/auth', authRoutes);
 // User Routes
 app.use('/api/users', userRoutes);
-// Admin Routes
-app.use('/api/admin', adminRoutes);
-// Database Routes
-app.use('/api/database', databaseRoutes);
 
 // If no routes handled the request, it's a 404
 app.use((req, res, next) => {
