@@ -5,6 +5,7 @@ import { AuthProvider } from "./contexts/AuthContext"
 import { Login } from "./pages/Login"
 import { Register } from "./pages/Register"
 import { ProtectedRoute } from "./components/ProtectedRoute"
+import { AdminRoute } from "./components/AdminRoute"
 import { DashboardLayout } from "./components/DashboardLayout"
 import { Home } from "./pages/Home"
 import { AdminPermissions } from "./pages/AdminPermissions"
@@ -36,25 +37,25 @@ function App() {
               </ProtectedRoute>
             } />
             <Route path="/admin/permissions" element={
-              <ProtectedRoute>
+              <AdminRoute>
                 <DashboardLayout>
                   <AdminPermissions />
                 </DashboardLayout>
-              </ProtectedRoute>
+              </AdminRoute>
             } />
             <Route path="/admin/database" element={
-              <ProtectedRoute>
+              <AdminRoute>
                 <DashboardLayout>
                   <DatabaseView />
                 </DashboardLayout>
-              </ProtectedRoute>
+              </AdminRoute>
             } />
             <Route path="/admin/enums" element={
-              <ProtectedRoute>
+              <AdminRoute>
                 <DashboardLayout>
                   <Enums />
                 </DashboardLayout>
-              </ProtectedRoute>
+              </AdminRoute>
             } />
             <Route path="/batch-creation" element={
               <ProtectedRoute>

@@ -6,7 +6,9 @@ const session = require("express-session");
 const MongoStore = require('connect-mongo');
 const basicRoutes = require("./routes/index");
 const authRoutes = require("./routes/authRoutes");
+const userRoutes = require("./routes/userRoutes");
 const { connectDB } = require("./config/database");
+const { seedDatabase } = require("./config/seedDatabase");
 const cors = require("cors");
 
 if (!process.env.DATABASE_URL) {
@@ -25,8 +27,13 @@ app.use(cors({}));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Database connection
-connectDB();
+// Database connection and seeding
+const initializeDatabase = async () => {
+  await connectDB();
+  await seedDatabase();
+};
+
+initializeDatabase();
 
 app.on("error", (error) => {
   console.error(`Server error: ${error.message}`);
@@ -37,6 +44,8 @@ app.on("error", (error) => {
 app.use(basicRoutes);
 // Authentication Routes
 app.use('/api/auth', authRoutes);
+// User Routes
+app.use('/api/users', userRoutes);
 
 // If no routes handled the request, it's a 404
 app.use((req, res, next) => {

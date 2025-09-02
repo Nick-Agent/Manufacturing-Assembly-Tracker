@@ -1,51 +1,34 @@
 import api from './api';
 
 // Description: Get all users and their permissions
-// Endpoint: GET /api/permissions/users
+// Endpoint: GET /api/users
 // Request: {}
-// Response: { users: Array<{ id: string, email: string, role: string, permissions: string[] }> }
-export const getUsers = () => {
-  return new Promise((resolve) => {
-    setTimeout(() => {
-      resolve({
-        users: [
-          {
-            id: '1',
-            email: 'user1@example.com',
-            role: 'operator',
-            permissions: ['batch-creation', 'serial-registration']
-          },
-          {
-            id: '2',
-            email: 'user2@example.com',
-            role: 'operator',
-            permissions: ['scan-in', 'scan-out', 'report']
-          },
-          {
-            id: '3',
-            email: 'admin@example.com',
-            role: 'admin',
-            permissions: ['all']
-          }
-        ]
-      });
-    }, 500);
-  });
+// Response: { success: boolean, data: { users: Array<{ _id: string, email: string, role: string, permissions: string[] }> } }
+export const getUsers = async () => {
+  try {
+    const response = await api.get('/api/users');
+    return {
+      users: response.data.data.users
+    };
+  } catch (error) {
+    throw new Error(error?.response?.data?.message || error.message);
+  }
 };
 
 // Description: Update user permissions
-// Endpoint: PUT /api/permissions/users/:id
-// Request: { id: string, permissions: string[] }
-// Response: { success: boolean, message: string }
-export const updateUserPermissions = (userId: string, permissions: string[]) => {
-  return new Promise((resolve) => {
-    setTimeout(() => {
-      resolve({
-        success: true,
-        message: 'User permissions updated successfully'
-      });
-    }, 600);
-  });
+// Endpoint: PUT /api/users/:id/permissions
+// Request: { permissions: string[] }
+// Response: { success: boolean, data: object, message: string }
+export const updateUserPermissions = async (userId: string, permissions: string[]) => {
+  try {
+    const response = await api.put(`/api/users/${userId}/permissions`, { permissions });
+    return {
+      success: response.data.success,
+      message: response.data.message
+    };
+  } catch (error) {
+    throw new Error(error?.response?.data?.message || error.message);
+  }
 };
 
 // Description: Get available permissions list

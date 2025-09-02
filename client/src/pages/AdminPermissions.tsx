@@ -34,7 +34,7 @@ export function AdminPermissions() {
       console.error("Error loading data:", error)
       toast({
         title: "Error",
-        description: "Failed to load users and permissions",
+        description: error.message || "Failed to load users and permissions",
         variant: "destructive"
       })
     } finally {
@@ -45,7 +45,7 @@ export function AdminPermissions() {
   const handlePermissionToggle = async (permissionKey: string, enabled: boolean) => {
     if (!selectedUserId) return
 
-    const user = users.find(u => u.id === selectedUserId)
+    const user = users.find(u => u._id === selectedUserId)
     if (!user) return
 
     // Don't allow changes to admin users
@@ -75,7 +75,7 @@ export function AdminPermissions() {
 
       // Update local state
       setUsers(prev => prev.map(u =>
-        u.id === selectedUserId
+        u._id === selectedUserId
           ? { ...u, permissions: newPermissions }
           : u
       ))
@@ -88,7 +88,7 @@ export function AdminPermissions() {
       console.error("Error updating permissions:", error)
       toast({
         title: "Error",
-        description: "Failed to update user permissions",
+        description: error.message || "Failed to update user permissions",
         variant: "destructive"
       })
     } finally {
@@ -107,7 +107,7 @@ export function AdminPermissions() {
     return <Badge variant="secondary">Operator</Badge>
   }
 
-  const selectedUser = users.find(u => u.id === selectedUserId)
+  const selectedUser = users.find(u => u._id === selectedUserId)
   const operatorUsers = users.filter(u => u.role !== 'admin')
 
   return (
@@ -148,7 +148,7 @@ export function AdminPermissions() {
                 </SelectTrigger>
                 <SelectContent>
                   {operatorUsers.map((user) => (
-                    <SelectItem key={user.id} value={user.id}>
+                    <SelectItem key={user._id} value={user._id}>
                       <div className="flex items-center gap-2">
                         <div className="w-6 h-6 rounded-full bg-gradient-to-r from-blue-500 to-indigo-600 flex items-center justify-center">
                           <span className="text-white text-xs font-medium">

@@ -17,6 +17,7 @@ import {
 import { useState } from "react"
 import { Button } from "./ui/button"
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "./ui/collapsible"
+import { useAuth } from "@/contexts/AuthContext"
 
 interface NavigationItem {
   title: string
@@ -117,10 +118,10 @@ export function SideNavigation() {
   const location = useLocation()
   const navigate = useNavigate()
   const [openItems, setOpenItems] = useState<string[]>([])
+  const { user } = useAuth()
 
-  // Mock user permissions - in real app this would come from context/API
-  const isAdmin = true // This should come from auth context
-  const userPermissions = ['batch-creation', 'serial-registration', 'test-log', 'stock-management'] // Mock permissions
+  const isAdmin = user?.role === 'admin'
+  const userPermissions = user?.permissions || []
 
   const toggleItem = (title: string) => {
     setOpenItems(prev =>

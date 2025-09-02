@@ -16,6 +16,16 @@ const schema = new mongoose.Schema({
     required: true,
     validate: { validator: isPasswordHash, message: 'Invalid password hash' },
   },
+  role: {
+    type: String,
+    enum: ['admin', 'operator'],
+    default: 'operator',
+    required: true,
+  },
+  permissions: {
+    type: [String],
+    default: [],
+  },
   createdAt: {
     type: Date,
     default: Date.now,

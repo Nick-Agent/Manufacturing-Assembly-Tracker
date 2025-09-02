@@ -36,6 +36,25 @@ class UserService {
     }
   }
 
+  static async updatePermissions(id, permissions) {
+    try {
+      const user = await User.findById(id);
+      if (!user) {
+        throw new Error('User not found');
+      }
+      
+      if (user.role === 'admin') {
+        throw new Error('Cannot modify admin user permissions');
+      }
+
+      user.permissions = permissions;
+      await user.save();
+      return user;
+    } catch (err) {
+      throw new Error(`Database error while updating user permissions ${id}: ${err}`);
+    }
+  }
+
   static async delete(id) {
     try {
       const result = await User.deleteOne({ _id: id }).exec();
@@ -58,15 +77,22 @@ class UserService {
 
       user.lastLoginAt = Date.now();
       const updatedUser = await user.save();
+      console.log(`User ${email} authenticated successfully with role: ${updatedUser.role}`);
       return updatedUser;
     } catch (err) {
+      console.error(`Authentication error for user ${email}:`, err);
       throw new Error(`Database error while authenticating user ${email} with password: ${err}`);
     }
   }
 
-  static async create({ email, password, name = '' }) {
+  static async create({ email, password, role = 'operator', permissions = [] }) {
     if (!email) throw new Error('Email is required');
     if (!password) throw new Error('Password is required');
+
+    // Validate role
+    if (!['admin', 'operator'].includes(role)) {
+      throw new Error('Invalid role. Must be either "admin" or "operator"');
+    }
 
     const existingUser = await UserService.getByEmail(email);
     if (existingUser) throw new Error('User with this email already exists');
@@ -77,12 +103,15 @@ class UserService {
       const user = new User({
         email,
         password: hash,
-        name,
+        role,
+        permissions: role === 'admin' ? [] : permissions, // Admin users don't need specific permissions
       });
 
       await user.save();
+      console.log(`User created successfully: ${email} with role: ${role}`);
       return user;
     } catch (err) {
+      console.error(`Error creating user ${email}:`, err);
       throw new Error(`Database error while creating new user: ${err}`);
     }
   }
