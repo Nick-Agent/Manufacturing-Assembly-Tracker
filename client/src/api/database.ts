@@ -26,171 +26,57 @@ export const getDatabases = () => {
 // Endpoint: GET /api/database/:name
 // Request: { name: string }
 // Response: { records: Array<any> }
-export const getDatabaseRecords = (databaseName: string) => {
-  return new Promise((resolve) => {
-    setTimeout(() => {
-      const mockData = {
-        'UL_ASM': [
-          {
-            _id: '1',
-            assemblyNumber: 'ASM001',
-            assemblyDate: '2024-01-15',
-            assembleBy: 'John Doe',
-            status: 'Active',
-            productCode: 'PROD001',
-            productDescription: 'Main Control Unit',
-            sourceWarehouse: 'WH001',
-            destinationWarehouse: 'WH002',
-            assemblyType: 'Main Assembly',
-            auto: 'Yes',
-            assembledQuantity: 100
-          }
-        ],
-        'UL_Product': [
-          {
-            _id: '1',
-            productCode: 'PROD001',
-            productDescription: 'Main Control Unit',
-            productGroup: 'Electronics',
-            binLocation: 'A1-B2',
-            basePack: 10,
-            alloca: 50,
-            onHand: 75,
-            baseUnit: 'PCS'
-          }
-        ],
-        'Batch_List': [
-          {
-            _id: '1',
-            assemblyNumber: 'ASM001',
-            status: 'Active',
-            date: '2024-01-15',
-            assemblyType: 'Main Assembly',
-            lastUpdate: '2024-01-15',
-            userName: 'admin@example.com',
-            productCode: 'PROD001',
-            productDescription: 'Main Control Unit',
-            agNumber: 'AG001',
-            note: 'Initial batch'
-          },
-          {
-            _id: '2',
-            assemblyNumber: 'ASM001',
-            status: 'Active',
-            date: '2024-01-16',
-            assemblyType: 'Main Assembly',
-            lastUpdate: '2024-01-16',
-            userName: 'admin@example.com',
-            productCode: 'PROD001',
-            productDescription: 'Main Control Unit',
-            agNumber: 'AG002',
-            note: 'Second batch with same assembly'
-          }
-        ],
-        'Serial_List': [
-          {
-            _id: '1',
-            serialNumber: 'SN001',
-            status: 'Manufacturing',
-            lastUpdate: '2024-01-15',
-            date: '2024-01-15',
-            userName: 'admin@example.com',
-            location: 'Setup',
-            assemblyNumber: 'ASM001',
-            assemblyType: 'Main Assembly',
-            productCode: 'PROD001',
-            note: 'Test serial'
-          },
-          {
-            _id: '2',
-            serialNumber: 'SN001',
-            status: 'Testing',
-            lastUpdate: '2024-01-16',
-            date: '2024-01-16',
-            userName: 'admin@example.com',
-            location: 'QA',
-            assemblyNumber: 'ASM001',
-            assemblyType: 'Main Assembly',
-            productCode: 'PROD001',
-            note: 'Duplicate serial for testing bulk edit'
-          }
-        ],
-        'Activity_Log': [
-          {
-            _id: '1',
-            serialNumber: 'SN001',
-            productCode: 'PROD001',
-            user: 'admin@example.com',
-            date: '2024-01-15',
-            time: '10:30:00',
-            logType: 'QA Test',
-            outcome: 'PASS',
-            reference: 'DOC001',
-            note: 'All tests passed',
-            activityData: 'Test data',
-            startLocation: 'Setup',
-            endLocation: 'Testing',
-            stockAdjusted: 'NO'
-          }
-        ],
-        'Main_Assembly': [
-          {
-            _id: '1',
-            serialNumber: 'SN001',
-            assemblyNumber: 'ASM001',
-            productCode: 'PROD001',
-            productName: 'Main Control Unit',
-            status: 'Active',
-            ipAddress: '192.168.1.100',
-            location: 'Testing'
-          }
-        ],
-        'Test_Document_List': [
-          {
-            _id: '1',
-            productCode: 'PROD001',
-            documentDescription: 'Quality Assurance Test',
-            documentNumber: 'DOC001',
-            version: '1.0',
-            type: 'QA'
-          }
-        ]
-      };
-
-      resolve({
-        records: mockData[databaseName as keyof typeof mockData] || []
-      });
-    }, 500);
-  });
+export const getDatabaseRecords = async (databaseName: string) => {
+  try {
+    const response = await api.get(`/api/database/${databaseName}`);
+    return response.data;
+  } catch (error: any) {
+    throw new Error(error?.response?.data?.error || error.message);
+  }
 };
 
-// Description: Import CSV data to database
+// Description: Import CSV data to database (now includes initialization)
 // Endpoint: POST /api/database/:name/import
 // Request: { name: string, csvData: string }
 // Response: { success: boolean, message: string }
-export const importDatabaseCSV = (databaseName: string, csvData: string) => {
-  return new Promise((resolve) => {
-    setTimeout(() => {
-      resolve({
-        success: true,
-        message: `Successfully imported data to ${databaseName}`
-      });
-    }, 1000);
-  });
+export const importDatabaseCSV = async (databaseName: string, csvData: string) => {
+  console.log('=== FRONTEND CSV IMPORT START ===');
+  console.log('Database name:', databaseName);
+  console.log('CSV data length:', csvData.length);
+  console.log('CSV data type:', typeof csvData);
+  console.log('First 300 characters of CSV:', csvData.substring(0, 300));
+  console.log('Making API request to:', `/api/database/${databaseName}/import`);
+
+  try {
+    console.log('Sending POST request...');
+    const response = await api.post(`/api/database/${databaseName}/import`, { csvData });
+    console.log('API response received:', response.data);
+    console.log('=== FRONTEND CSV IMPORT SUCCESS ===');
+    return response.data;
+  } catch (error: any) {
+    console.error('=== FRONTEND CSV IMPORT ERROR ===');
+    console.error('Error type:', error.constructor.name);
+    console.error('Error message:', error.message);
+    console.error('Error response:', error.response);
+    console.error('Error response data:', error.response?.data);
+    console.error('Error response status:', error.response?.status);
+    console.error('Error response headers:', error.response?.headers);
+    console.error('Full error object:', error);
+    throw new Error(error?.response?.data?.error || error.message);
+  }
 };
 
 // Description: Export database to CSV
 // Endpoint: GET /api/database/:name/export
 // Request: { name: string }
 // Response: { csvData: string }
-export const exportDatabaseCSV = (databaseName: string) => {
-  return new Promise((resolve) => {
-    setTimeout(() => {
-      resolve({
-        csvData: 'column1,column2,column3\nvalue1,value2,value3\n'
-      });
-    }, 500);
-  });
+export const exportDatabaseCSV = async (databaseName: string) => {
+  try {
+    const response = await api.get(`/api/database/${databaseName}/export`);
+    return response.data;
+  } catch (error: any) {
+    throw new Error(error?.response?.data?.error || error.message);
+  }
 };
 
 // Description: Update database record
