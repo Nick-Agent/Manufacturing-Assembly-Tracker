@@ -26,15 +26,24 @@ export function ModularSerialListScanner({
   const [serialList, setSerialList] = useState<string[]>([])
   const [error, setError] = useState<string | null>(null)
   const [isValidating, setIsValidating] = useState(false)
+  const [duplicateSerial, setDuplicateSerial] = useState<string | null>(null)
   const inputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
     onSerialsChange(serialList)
   }, [serialList, onSerialsChange])
 
+  // Auto-focus input on mount and after any action
+  useEffect(() => {
+    if (inputRef.current && !error) {
+      inputRef.current.focus()
+    }
+  }, [error, serialList])
+
   const validateSerial = async (serial: string): Promise<string | null> => {
     // Basic validation - check for duplicates in current list
     if (serialList.includes(serial)) {
+      setDuplicateSerial(serial)
       return "Serial is already in the current list."
     }
 
@@ -48,23 +57,34 @@ export function ModularSerialListScanner({
 
   const handleInputChange = (value: string) => {
     setCurrentInput(value)
-    if (error) {
-      setError(null)
-    }
+    // Don't clear error here - user must dismiss it explicitly
   }
 
   const handleKeyDown = async (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && currentInput.trim()) {
       e.preventDefault()
+      
+      // Prevent scanning if there's an active error
+      if (error) {
+        return
+      }
+      
       await addSerial(currentInput.trim())
     }
   }
 
   const handlePaste = async (e: React.ClipboardEvent) => {
     e.preventDefault()
+    
+    // Prevent pasting if there's an active error
+    if (error) {
+      return
+    }
+    
     const pastedText = e.clipboardData.getData('text')
     const lines = pastedText.split(/\r?\n/).filter(line => line.trim())
-    
+
+    // Validate all lines first
     for (const line of lines) {
       const serial = line.trim()
       if (serial) {
@@ -83,19 +103,19 @@ export function ModularSerialListScanner({
       ...prev
     ])
     setCurrentInput("")
-    
+
     // Focus back to input
     setTimeout(() => inputRef.current?.focus(), 0)
   }
 
   const addSerial = async (serial: string) => {
-    if (!serial || disabled) return
+    if (!serial || disabled || error) return
 
     setIsValidating(true)
-    
+
     try {
       const validationError = await validateSerial(serial)
-      
+
       if (validationError) {
         setError(validationError)
         setIsValidating(false)
@@ -106,7 +126,8 @@ export function ModularSerialListScanner({
       setSerialList(prev => [serial, ...prev])
       setCurrentInput("")
       setError(null)
-      
+      setDuplicateSerial(null)
+
       // Keep focus on input
       setTimeout(() => inputRef.current?.focus(), 0)
     } catch (err) {
@@ -125,13 +146,23 @@ export function ModularSerialListScanner({
     setSerialList([])
     setCurrentInput("")
     setError(null)
+    setDuplicateSerial(null)
     setTimeout(() => inputRef.current?.focus(), 0)
   }
 
   const dismissError = () => {
+    // Remove the duplicate entry if it exists
+    if (duplicateSerial) {
+      setCurrentInput("")
+      setDuplicateSerial(null)
+    }
+    
     setError(null)
     setTimeout(() => inputRef.current?.focus(), 0)
   }
+
+  // Determine if list should be scrollable (more than 5 items)
+  const shouldScroll = serialList.length > 5
 
   return (
     <div className={`space-y-4 ${className}`}>
@@ -147,7 +178,7 @@ export function ModularSerialListScanner({
           disabled={disabled || isValidating || !!error}
           className="text-lg h-12"
         />
-        
+
         {/* Error Display */}
         {error && (
           <Alert variant="destructive" className="bg-red-50 border-red-200">
@@ -190,7 +221,30 @@ export function ModularSerialListScanner({
             </div>
           </CardHeader>
           <CardContent>
-            <ScrollArea className="h-40 w-full">
+            {shouldScroll ? (
+              <ScrollArea className="h-60 w-full">
+                <div className="space-y-2">
+                  {serialList.map((serial, index) => (
+                    <div
+                      key={`${serial}-${index}`}
+                      className="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
+                    >
+                      <span className="font-mono text-sm font-medium text-slate-700 dark:text-slate-300">
+                        {serial}
+                      </span>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => removeSerial(index)}
+                        className="h-6 w-6 p-0 text-red-500 hover:text-red-700 hover:bg-red-50"
+                      >
+                        <X className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  ))}
+                </div>
+              </ScrollArea>
+            ) : (
               <div className="space-y-2">
                 {serialList.map((serial, index) => (
                   <div
@@ -211,7 +265,7 @@ export function ModularSerialListScanner({
                   </div>
                 ))}
               </div>
-            </ScrollArea>
+            )}
           </CardContent>
         </Card>
       )}

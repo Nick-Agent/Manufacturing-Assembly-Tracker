@@ -11,6 +11,11 @@ export default defineConfig({
   },
   server: {
     host: true,
+    port: 5173,
+    hmr: {
+      clientPort: 443,
+      host: 'preview-0n2fuhmg.ui.pythagora.ai'
+    },
     proxy: {
       '/api': {
         target: 'http://localhost:3000',
@@ -28,5 +33,13 @@ export default defineConfig({
     watch: {
       ignored: ['**/node_modules/**', '**/dist/**', '**/public/**', '**/log/**']
     }
+  },
+  build: {
+    sourcemap: true,
+    rollupOptions: {
+      output: {
+        manualChunks: undefined,
+      },
+    },
   },
 })

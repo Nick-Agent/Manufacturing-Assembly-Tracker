@@ -5,12 +5,11 @@ import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Badge } from "@/components/ui/badge"
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { useToast } from "@/hooks/useToast"
 import { ScanLine, Package, CheckCircle } from "lucide-react"
 import { submitScanOut } from "@/api/stock"
-import { getSerialDetails } from "@/api/serial"
-import { getTestDocument } from "@/api/test"
+import { getProductSummary } from "@/api/serial"
 import { ModularSerialListScanner } from "@/components/ModularSerialListScanner"
 
 interface ScanOutFormData {
@@ -18,12 +17,19 @@ interface ScanOutFormData {
   note?: string
 }
 
+interface ProductSummary {
+  productCode: string
+  agNumber: string
+  description: string
+  count: number
+}
+
 export function ScanOut() {
   const { toast } = useToast()
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [serialNumbers, setSerialNumbers] = useState<string[]>([])
-  const [productInfo, setProductInfo] = useState<any>(null)
-  const [testDocument, setTestDocument] = useState<any>(null)
+  const [productSummary, setProductSummary] = useState<ProductSummary[]>([])
+  const [isLoadingProducts, setIsLoadingProducts] = useState(false)
 
   const {
     register,
@@ -42,27 +48,23 @@ export function ScanOut() {
 
   const watchedScanOutTo = watch("scanOutTo")
 
-  // Load product info when first serial is scanned
+  // Load product summary when serials change
   useEffect(() => {
     if (serialNumbers.length > 0) {
-      getSerialDetails(serialNumbers[0])
+      setIsLoadingProducts(true)
+      getProductSummary(serialNumbers)
         .then((response: any) => {
-          setProductInfo(response.serial)
-          // Load test document
-          getTestDocument(response.serial.productCode)
-            .then((docResponse: any) => {
-              setTestDocument(docResponse.document)
-            })
-            .catch((error) => {
-              console.error("Error loading test document:", error)
-            })
+          setProductSummary(response.products)
         })
         .catch((error) => {
-          console.error("Error loading product info:", error)
+          console.error("Error loading product summary:", error)
+          setProductSummary([])
+        })
+        .finally(() => {
+          setIsLoadingProducts(false)
         })
     } else {
-      setProductInfo(null)
-      setTestDocument(null)
+      setProductSummary([])
     }
   }, [serialNumbers])
 
@@ -105,8 +107,7 @@ export function ScanOut() {
 
       reset()
       setSerialNumbers([])
-      setProductInfo(null)
-      setTestDocument(null)
+      setProductSummary([])
     } catch (error: any) {
       console.error("Scan OUT error:", error)
       toast({
@@ -120,6 +121,7 @@ export function ScanOut() {
   }
 
   const isFormValid = isValid && serialNumbers.length > 0 && watchedScanOutTo
+  const totalScannedCount = serialNumbers.length
 
   return (
     <div className="space-y-6">
@@ -160,54 +162,52 @@ export function ScanOut() {
               />
             </div>
 
-            {/* Product Information Display */}
-            {productInfo && (
+            {/* Product Summary Table */}
+            {serialNumbers.length > 0 && (
               <Card className="bg-slate-50 border-slate-200">
                 <CardHeader className="pb-3">
-                  <CardTitle className="text-lg">Product Information</CardTitle>
+                  <CardTitle className="text-lg flex items-center justify-between">
+                    <span>Product Summary</span>
+                    <span className="text-sm font-normal text-slate-600">
+                      Total Scanned: {totalScannedCount}
+                    </span>
+                  </CardTitle>
                 </CardHeader>
-                <CardContent className="space-y-3">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <Label className="text-sm font-medium text-slate-600">Product Code</Label>
-                      <p className="text-lg font-semibold text-slate-800">{productInfo.productCode}</p>
+                <CardContent>
+                  {isLoadingProducts ? (
+                    <div className="flex items-center justify-center py-8">
+                      <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-slate-600" />
                     </div>
-                    <div>
-                      <Label className="text-sm font-medium text-slate-600">Serial Count</Label>
-                      <p className="text-lg font-semibold text-slate-800">
-                        {serialNumbers.length} serial{serialNumbers.length !== 1 ? 's' : ''}
-                      </p>
+                  ) : (
+                    <div className="border rounded-lg overflow-hidden">
+                      <Table>
+                        <TableHeader>
+                          <TableRow className="bg-slate-100">
+                            <TableHead>Product Code</TableHead>
+                            <TableHead>AG Number</TableHead>
+                            <TableHead>Description</TableHead>
+                            <TableHead className="text-right">Count</TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {productSummary.map((product, index) => (
+                            <TableRow key={index} className="hover:bg-slate-50">
+                              <TableCell className="font-mono font-medium">
+                                {product.productCode}
+                              </TableCell>
+                              <TableCell className="font-mono">
+                                {product.agNumber}
+                              </TableCell>
+                              <TableCell>{product.description}</TableCell>
+                              <TableCell className="text-right font-semibold">
+                                {product.count}
+                              </TableCell>
+                            </TableRow>
+                          ))}
+                        </TableBody>
+                      </Table>
                     </div>
-                  </div>
-                </CardContent>
-              </Card>
-            )}
-
-            {/* Test Document Information */}
-            {testDocument && (
-              <Card className="bg-blue-50 border-blue-200">
-                <CardHeader className="pb-3">
-                  <CardTitle className="text-lg">Test Document Details</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-3">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <Label className="text-sm font-medium text-slate-600">Document Description</Label>
-                      <p className="text-slate-800">{testDocument.documentDescription}</p>
-                    </div>
-                    <div>
-                      <Label className="text-sm font-medium text-slate-600">Document Number</Label>
-                      <p className="text-slate-800 font-mono">{testDocument.documentNumber}</p>
-                    </div>
-                    <div>
-                      <Label className="text-sm font-medium text-slate-600">Version</Label>
-                      <p className="text-slate-800">{testDocument.version}</p>
-                    </div>
-                    <div>
-                      <Label className="text-sm font-medium text-slate-600">Type</Label>
-                      <Badge variant="secondary">{testDocument.type}</Badge>
-                    </div>
-                  </div>
+                  )}
                 </CardContent>
               </Card>
             )}
@@ -258,8 +258,7 @@ export function ScanOut() {
                 onClick={() => {
                   reset()
                   setSerialNumbers([])
-                  setProductInfo(null)
-                  setTestDocument(null)
+                  setProductSummary([])
                 }}
                 disabled={isSubmitting}
               >

@@ -11,7 +11,8 @@ import {
   FileText,
   ChevronDown,
   ChevronRight,
-  Warehouse
+  Warehouse,
+  Settings
 } from "lucide-react"
 import { useState } from "react"
 import { Button } from "./ui/button"
@@ -45,6 +46,11 @@ const navigationItems: NavigationItem[] = [
         title: "Database View",
         href: "/admin/database",
         icon: Database,
+      },
+      {
+        title: "Enums",
+        href: "/admin/enums",
+        icon: Settings,
       },
     ],
   },
@@ -117,8 +123,8 @@ export function SideNavigation() {
   const userPermissions = ['batch-creation', 'serial-registration', 'test-log', 'stock-management'] // Mock permissions
 
   const toggleItem = (title: string) => {
-    setOpenItems(prev => 
-      prev.includes(title) 
+    setOpenItems(prev =>
+      prev.includes(title)
         ? prev.filter(item => item !== title)
         : [...prev, title]
     )

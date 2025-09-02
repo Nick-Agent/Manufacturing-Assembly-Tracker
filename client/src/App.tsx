@@ -18,6 +18,7 @@ import { StockManagement } from "./pages/StockManagement"
 import { ScanIn } from "./pages/ScanIn"
 import { ScanOut } from "./pages/ScanOut"
 import { Report } from "./pages/Report"
+import { Enums } from "./pages/Enums"
 
 function App() {
   return (
@@ -45,6 +46,13 @@ function App() {
               <ProtectedRoute>
                 <DashboardLayout>
                   <DatabaseView />
+                </DashboardLayout>
+              </ProtectedRoute>
+            } />
+            <Route path="/admin/enums" element={
+              <ProtectedRoute>
+                <DashboardLayout>
+                  <Enums />
                 </DashboardLayout>
               </ProtectedRoute>
             } />

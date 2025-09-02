@@ -167,6 +167,7 @@ export function TestLogHub() {
                     <div className="flex justify-center gap-4 text-sm">
                       <span className="text-green-600">✓ {period.data.passed}</span>
                       <span className="text-red-600">✗ {period.data.failed}</span>
+                      <span className="text-orange-600">↻ {period.data.retryPassed || 0}</span>
                     </div>
                   </div>
                 </div>

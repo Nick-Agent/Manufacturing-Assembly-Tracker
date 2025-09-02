@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Badge } from "@/components/ui/badge"
 import { useToast } from "@/hooks/useToast"
-import { XCircle, TestTube, FileText, AlertTriangle } from "lucide-react"
+import { XCircle, TestTube, FileText, AlertTriangle, User } from "lucide-react"
 import { getSerialDetails } from "@/api/serial"
 import { getTestDocument, submitTestFail } from "@/api/test"
 
@@ -21,6 +21,7 @@ export function TestLogFail() {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [serialDetails, setSerialDetails] = useState<any>(null)
   const [testDocument, setTestDocument] = useState<any>(null)
+  const [technicianInfo, setTechnicianInfo] = useState<any>(null)
   const [isLoadingSerial, setIsLoadingSerial] = useState(false)
 
   const {
@@ -54,11 +55,18 @@ export function TestLogFail() {
             .catch((error) => {
               console.error("Error loading test document:", error)
             })
+          
+          // Mock technician info - in real app this would come from auth context or API
+          setTechnicianInfo({
+            technician: "John Smith",
+            agNumber: "AG-2024-001"
+          })
         })
         .catch((error) => {
           console.error("Error loading serial details:", error)
           setSerialDetails(null)
           setTestDocument(null)
+          setTechnicianInfo(null)
         })
         .finally(() => {
           setIsLoadingSerial(false)
@@ -66,6 +74,7 @@ export function TestLogFail() {
     } else {
       setSerialDetails(null)
       setTestDocument(null)
+      setTechnicianInfo(null)
     }
   }, [watchedSerialNumber])
 
@@ -100,6 +109,7 @@ export function TestLogFail() {
       reset()
       setSerialDetails(null)
       setTestDocument(null)
+      setTechnicianInfo(null)
     } catch (error: any) {
       console.error("Test FAIL error:", error)
       toast({
@@ -168,6 +178,30 @@ export function TestLogFail() {
               )}
             </div>
 
+            {/* Technician and AG Number Information */}
+            {technicianInfo && (
+              <Card className="bg-red-50 border-red-200">
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-lg flex items-center gap-2">
+                    <User className="h-5 w-5 text-red-600" />
+                    Technician Information
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <Label className="text-sm font-medium text-slate-600">Technician</Label>
+                      <p className="text-lg font-semibold text-slate-800">{technicianInfo.technician}</p>
+                    </div>
+                    <div>
+                      <Label className="text-sm font-medium text-slate-600">AG Number</Label>
+                      <p className="text-lg font-semibold text-slate-800">{technicianInfo.agNumber}</p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
             {/* Serial Details Display */}
             {serialDetails && (
               <Card className="bg-slate-50 border-slate-200">
@@ -202,10 +236,10 @@ export function TestLogFail() {
 
             {/* Test Document Information */}
             {testDocument && (
-              <Card className="bg-red-50 border-red-200">
+              <Card className="bg-blue-50 border-blue-200">
                 <CardHeader className="pb-3">
                   <CardTitle className="text-lg flex items-center gap-2">
-                    <FileText className="h-5 w-5 text-red-600" />
+                    <FileText className="h-5 w-5 text-blue-600" />
                     Test Document Details
                   </CardTitle>
                 </CardHeader>
@@ -259,6 +293,7 @@ export function TestLogFail() {
                   reset()
                   setSerialDetails(null)
                   setTestDocument(null)
+                  setTechnicianInfo(null)
                 }}
                 disabled={isSubmitting}
               >

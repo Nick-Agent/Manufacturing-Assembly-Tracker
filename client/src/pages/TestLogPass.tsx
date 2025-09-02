@@ -6,7 +6,7 @@ import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Badge } from "@/components/ui/badge"
 import { useToast } from "@/hooks/useToast"
-import { CheckCircle, TestTube, FileText } from "lucide-react"
+import { CheckCircle, TestTube, FileText, User } from "lucide-react"
 import { validateSerialsProductCode } from "@/api/serial"
 import { getTestDocument, submitTestPass } from "@/api/test"
 import { ModularSerialListScanner } from "@/components/ModularSerialListScanner"
@@ -21,6 +21,7 @@ export function TestLogPass() {
   const [serialNumbers, setSerialNumbers] = useState<string[]>([])
   const [productCode, setProductCode] = useState<string>("")
   const [testDocument, setTestDocument] = useState<any>(null)
+  const [technicianInfo, setTechnicianInfo] = useState<any>(null)
 
   const {
     register,
@@ -48,6 +49,12 @@ export function TestLogPass() {
               .catch((error) => {
                 console.error("Error loading test document:", error)
               })
+            
+            // Mock technician info - in real app this would come from auth context or API
+            setTechnicianInfo({
+              technician: "John Smith",
+              agNumber: "AG-2024-001"
+            })
           }
         })
         .catch((error) => {
@@ -61,6 +68,7 @@ export function TestLogPass() {
     } else {
       setProductCode("")
       setTestDocument(null)
+      setTechnicianInfo(null)
     }
   }, [serialNumbers, toast])
 
@@ -121,6 +129,7 @@ export function TestLogPass() {
       setSerialNumbers([])
       setProductCode("")
       setTestDocument(null)
+      setTechnicianInfo(null)
     } catch (error: any) {
       console.error("Test PASS error:", error)
       toast({
@@ -174,6 +183,30 @@ export function TestLogPass() {
                 placeholder="Scan or enter serial number..."
               />
             </div>
+
+            {/* Technician and AG Number Information */}
+            {technicianInfo && (
+              <Card className="bg-green-50 border-green-200">
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-lg flex items-center gap-2">
+                    <User className="h-5 w-5 text-green-600" />
+                    Technician Information
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <Label className="text-sm font-medium text-slate-600">Technician</Label>
+                      <p className="text-lg font-semibold text-slate-800">{technicianInfo.technician}</p>
+                    </div>
+                    <div>
+                      <Label className="text-sm font-medium text-slate-600">AG Number</Label>
+                      <p className="text-lg font-semibold text-slate-800">{technicianInfo.agNumber}</p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
 
             {/* Product Information Display */}
             {productCode && (
@@ -253,6 +286,7 @@ export function TestLogPass() {
                   setSerialNumbers([])
                   setProductCode("")
                   setTestDocument(null)
+                  setTechnicianInfo(null)
                 }}
                 disabled={isSubmitting}
               >

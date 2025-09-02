@@ -3,7 +3,7 @@ import api from './api';
 // Description: Get assembly numbers for typeahead
 // Endpoint: GET /api/assembly/search
 // Request: { query: string, batchType: string }
-// Response: { assemblies: Array<{ assemblyNumber: string, productCode: string, productDescription: string }> }
+// Response: { assemblies: Array<{ assemblyNumber: string, productCode: string, productDescription: string, assemblyDate: string, assembleBy: string, status: string, sourceWarehouse: string, destinationWarehouse: string, assemblyType: string, auto: string, assembledQuantity: number }> }
 export const searchAssemblies = (query: string, batchType: string) => {
   return new Promise((resolve) => {
     setTimeout(() => {
@@ -11,17 +11,44 @@ export const searchAssemblies = (query: string, batchType: string) => {
         {
           assemblyNumber: 'ASM001',
           productCode: 'PROD001',
-          productDescription: 'Main Control Unit'
+          productDescription: 'Main Control Unit',
+          agNumber: 'AG001',
+          assemblyDate: '2024-01-15',
+          assembleBy: 'John Smith',
+          status: 'Active',
+          sourceWarehouse: 'WH001',
+          destinationWarehouse: 'WH002',
+          assemblyType: 'Main Assembly',
+          auto: 'Yes',
+          assembledQuantity: 100
         },
         {
           assemblyNumber: 'ASM002',
           productCode: 'PROD002',
-          productDescription: 'Secondary Control Unit'
+          productDescription: 'Secondary Control Unit',
+          agNumber: 'AG002',
+          assemblyDate: '2024-01-16',
+          assembleBy: 'Jane Doe',
+          status: 'Active',
+          sourceWarehouse: 'WH002',
+          destinationWarehouse: 'WH003',
+          assemblyType: 'Sub Assembly',
+          auto: 'No',
+          assembledQuantity: 50
         },
         {
           assemblyNumber: 'BCH001',
           productCode: 'PROD003',
-          productDescription: 'Batch Control Unit'
+          productDescription: 'Batch Control Unit',
+          agNumber: 'AG003',
+          assemblyDate: '2024-01-17',
+          assembleBy: 'Mike Johnson',
+          status: 'Pending',
+          sourceWarehouse: 'WH001',
+          destinationWarehouse: 'WH004',
+          assemblyType: 'Main Assembly',
+          auto: 'Yes',
+          assembledQuantity: 75
         }
       ];
 
@@ -76,7 +103,7 @@ export const createBatch = (batchData: {
 // Description: Get batch list for typeahead
 // Endpoint: GET /api/batch/list
 // Request: {}
-// Response: { batches: Array<{ assemblyNumber: string, productCode: string, productDescription: string }> }
+// Response: { batches: Array<{ assemblyNumber: string, productCode: string, productDescription: string, agNumber?: string }> }
 export const getBatchList = () => {
   return new Promise((resolve) => {
     setTimeout(() => {
@@ -85,17 +112,20 @@ export const getBatchList = () => {
           {
             assemblyNumber: 'ASM001',
             productCode: 'PROD001',
-            productDescription: 'Main Control Unit'
+            productDescription: 'Main Control Unit',
+            agNumber: 'AG001'
           },
           {
             assemblyNumber: 'ASM002',
             productCode: 'PROD002',
-            productDescription: 'Secondary Control Unit'
+            productDescription: 'Secondary Control Unit',
+            agNumber: 'AG002'
           },
           {
             assemblyNumber: 'BCH001',
             productCode: 'PROD003',
-            productDescription: 'Batch Control Unit'
+            productDescription: 'Batch Control Unit',
+            agNumber: 'AG003'
           }
         ]
       });

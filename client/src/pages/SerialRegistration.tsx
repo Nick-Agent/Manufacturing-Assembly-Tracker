@@ -5,8 +5,9 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
+import { Badge } from "@/components/ui/badge"
 import { useToast } from "@/hooks/useToast"
-import { Clipboard, Search, CheckCircle, Package } from "lucide-react"
+import { Clipboard, Search, CheckCircle, Package, Info } from "lucide-react"
 import { getBatchList } from "@/api/batch"
 import { checkSerialExists, registerSerials } from "@/api/serial"
 import { ModularSerialListScanner } from "@/components/ModularSerialListScanner"
@@ -128,6 +129,20 @@ export function SerialRegistration() {
 
   const isFormValid = isValid && serialNumbers.length > 0 && watchedAssemblyNumber
 
+  // Mock batch quantity data - in real app this would come from API
+  const getBatchQuantityInfo = () => {
+    if (!selectedBatch) return null
+    
+    // Mock data based on selected batch
+    return {
+      totalQuantity: 500,
+      registeredQuantity: 247,
+      outstanding: 253
+    }
+  }
+
+  const quantityInfo = getBatchQuantityInfo()
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -201,16 +216,52 @@ export function SerialRegistration() {
               </Popover>
             </div>
 
-            {/* Auto-filled Product Code */}
+            {/* Batch Information Display */}
             {selectedBatch && (
-              <div className="space-y-2">
-                <Label htmlFor="productCode">Product Code</Label>
-                <Input
-                  {...register("productCode")}
-                  readOnly
-                  className="bg-slate-50"
-                />
-              </div>
+              <Card className="bg-blue-50 border-blue-200">
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-lg flex items-center gap-2">
+                    <Info className="h-5 w-5 text-blue-600" />
+                    Batch Information
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div>
+                      <Label className="text-sm font-medium text-slate-600">Product Code</Label>
+                      <p className="text-lg font-semibold text-slate-800">{selectedBatch.productCode}</p>
+                    </div>
+                    <div>
+                      <Label className="text-sm font-medium text-slate-600">Product Description</Label>
+                      <p className="text-slate-800">{selectedBatch.productDescription}</p>
+                    </div>
+                    <div>
+                      <Label className="text-sm font-medium text-slate-600">AG Number</Label>
+                      <p className="text-slate-800 font-mono">{selectedBatch.agNumber || 'N/A'}</p>
+                    </div>
+                  </div>
+
+                  {/* Quantity Information */}
+                  {quantityInfo && (
+                    <div className="border-t pt-4">
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div className="text-center p-3 bg-white rounded-lg border border-slate-200">
+                          <Label className="text-sm font-medium text-slate-600">Total Scanned</Label>
+                          <p className="text-2xl font-bold text-blue-600">{serialNumbers.length}</p>
+                        </div>
+                        <div className="text-center p-3 bg-white rounded-lg border border-slate-200">
+                          <Label className="text-sm font-medium text-slate-600">Quantity</Label>
+                          <p className="text-2xl font-bold text-green-600">{quantityInfo.totalQuantity}</p>
+                        </div>
+                        <div className="text-center p-3 bg-white rounded-lg border border-slate-200">
+                          <Label className="text-sm font-medium text-slate-600">Outstanding</Label>
+                          <p className="text-2xl font-bold text-orange-600">{quantityInfo.outstanding}</p>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
             )}
 
             {/* Serial Number Scanner */}
